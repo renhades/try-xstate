@@ -12,6 +12,9 @@ const OrderMachine = createMachine({
     id: 'Order',
     predictableActionArguments: true,
     initial: 'pending',
+    context: {
+        description: 'extended states'
+    },
     states: {
         pending: {
             on: {
@@ -57,12 +60,14 @@ const OrderMachine = createMachine({
     actions: {
         setSuccessful: (context, event) => {
             console.log({
+                context,
                 sucessful: true,
                 event
             });
         },
         setFailed: (context, event) => {
             console.log({
+                context,
                 sucessful: false,
                 event
             });
