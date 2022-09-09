@@ -53,7 +53,7 @@ const OrderMachine = createMachine({
             }
         },
         completed: {
-            on: {}
+            type: 'final'
         },
     }
 }, {
@@ -77,9 +77,16 @@ const OrderMachine = createMachine({
 
 const OrderService = interpret(OrderMachine).onTransition((state) => {
     console.log(`Current State: ${state.value}`);
+    if (state.value === 'in_progress') {
+        console.log({
+            state
+        });
+    }
 });
 
 OrderService.start();
 OrderService.send({ type: 'IN_PROGRESS' });
 OrderService.send({ type: 'PENDING' });
 OrderService.send({ type: 'PAID' });
+OrderService.send({ type: 'COMPLETED' });
+OrderService.send({ type: 'IN_PROGRESS' });
