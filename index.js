@@ -1,4 +1,4 @@
-import { createMachine } from "xstate";
+import { createMachine, interpret } from "xstate";
 
 /**
  * status:
@@ -10,13 +10,17 @@ import { createMachine } from "xstate";
 
 const OrderMachine = createMachine({
     id: 'Order',
+    predictableActionArguments: true,
     initial: 'pending',
     states: {
         pending: {
             on: {
                 IN_PROGRESS: {
                     target: 'in_progress',
-                    actions: ''
+                    actions: 'setSuccessful'
+                },
+                PAID: {
+                    actions: 'setFailed'
                 }
             }
         },
@@ -24,7 +28,10 @@ const OrderMachine = createMachine({
             on: {
                 PAID: {
                     target: 'paid',
-                    actions: ''
+                    actions: 'setSuccessful'
+                },
+                PENDING: {
+                    actions: 'setFailed'
                 }
             }
         },
@@ -32,7 +39,13 @@ const OrderMachine = createMachine({
             on: {
                 COMPLETED: {
                     target: 'completed',
-                    actions: ''
+                    actions: 'setSuccessful'
+                },
+                IN_PROGRESS: {
+                    actions: 'setFailed'
+                },
+                PENDING: {
+                    actions: 'setFailed'
                 }
             }
         },
@@ -42,8 +55,26 @@ const OrderMachine = createMachine({
     }
 }, {
     actions: {
-        setAnimations: (context, event) {
-            console.log(event);
-        }
+        setSuccessful: (context, event) => {
+            console.log({
+                sucessful: true,
+                event
+            });
+        },
+        setFailed: (context, event) => {
+            console.log({
+                sucessful: false,
+                event
+            });
+        },
     }
-})
+});
+
+const OrderService = interpret(OrderMachine).onTransition((state) => {
+    console.log(`Current State: ${state.value}`);
+});
+
+OrderService.start();
+OrderService.send({ type: 'IN_PROGRESS' });
+OrderService.send({ type: 'PENDING' });
+OrderService.send({ type: 'PAID' });
